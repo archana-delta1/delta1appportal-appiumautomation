@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.1.dtd" >
+
+<suite name="Delta1 Automation Suite">
+    <test name="Desktop Tests">
+        <classes>
+            <class name="com.deltaone.tests.AddTickersTest"/>
+        </classes>
+    </test>
+</suite>

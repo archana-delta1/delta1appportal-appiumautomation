@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Failed suite [Delta1 Automation Suite]" guice-stage="DEVELOPMENT" verbose="0">
+  <test thread-count="5" name="Desktop Tests(failed)" verbose="0">
+    <classes>
+      <class name="com.deltaone.tests.AddTickersTest">
+        <methods>
+          <include name="setUp"/>
+          <include name="tearDown"/>
+          <include name="setupPageObjects"/>
+          <include name="addTickersFromExcel"/>
+          <include name="startAppiumServer"/>
+        </methods>
+      </class> <!-- com.deltaone.tests.AddTickersTest -->
+    </classes>
+  </test> <!-- Desktop Tests(failed) -->
+</suite> <!-- Failed suite [Delta1 Automation Suite] -->

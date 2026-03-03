@@ -1,0 +1,21 @@
+# Eclipse project files
+.classpath
+.project
+.settings/
+
+# Build output
+bin/
+target/
+test-output/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+*.iml
+.idea/
+.vscode/

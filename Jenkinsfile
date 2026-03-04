@@ -1,6 +1,6 @@
 pipeline {
-  //agent { label 'windows-gui-agent' }
-  agent any
+  agent { label 'windows-gui-agent' }
+  //agent any
   stages {
     stage('Checkout') {
       steps { checkout scm }

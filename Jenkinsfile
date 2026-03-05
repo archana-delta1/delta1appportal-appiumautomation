@@ -38,11 +38,19 @@ pipeline {
 
     post {
         always {
-            // Archive test results (JUnit/Surefire) so you can see them in Jenkins
+            // 1. Capture results first
             junit '**/target/surefire-reports/*.xml'
-            
-            // Optional: Cleanup workspace
-            cleanWs()
+
+            // 2. Force kill background processes that might be locking the folder
+            script {
+                // This kills any hanging WinAppDriver or Appium processes
+                bat 'taskkill /F /IM WinAppDriver.exe /T || echo WinAppDriver not running'
+                bat 'taskkill /F /IM node.exe /T || echo Appium (node) not running'
+            }
+
+            // 3. Now clean the workspace (use catchError so the build doesn't fail just because of a folder lock)
+            catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                cleanWs()
+            }
         }
     }
-}

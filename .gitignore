@@ -1,15 +1,18 @@
-# Eclipse project files
+# Ignore IDE specific files (Eclipse/IntelliJ)
+.settings/
 .classpath
 .project
-.settings/
+.idea/
+*.iml
 
 # Build output
 bin/
 target/
 test-output/
 
-# Logs
+# Ignore Appium/WinAppDriver logs
 *.log
+screenshots/
 
 # OS files
 .DS_Store
@@ -19,3 +22,11 @@ Thumbs.db
 *.iml
 .idea/
 .vscode/
+
+# Ignore Jenkins and Local Workspaces
+workspace/
+.jenkins/
+
+# Ignore Maven Build artifacts
+target/
+*.class

@@ -1,44 +1,48 @@
 pipeline {
-  agent { label 'windows-gui-agent' }
-  //agent any
-  stages {
-    stage('Checkout') {
-      steps { checkout scm }
+    agent { label 'bloomberg-terminal-node' } // The label of your manual-launch machine
+
+    environment {
+        MAVEN_HOME = "C:\\Program Files\\apache-maven-3.9.x" // Path to Maven on the machine
+        PATH = "${env.MAVEN_HOME}\\bin;${env.PATH}"
     }
-    stage('Prepare') {
-      steps {
-        // start Appium in background and redirect logs
-        bat '"C:\\Program Files\\nodejs\\node.exe" "C:\\Users\\jenkins\\AppData\\Roaming\\npm\\node_modules\\appium\\build\\lib\\main.js" > appium.log 2>&1 &'
-        // wait for Appium to be ready (simple loop)
-        bat '''
-          powershell -Command "
-            $ready = $false; 
-            for ($i=0; $i -lt 30 -and -not $ready; $i++) {
-              try { $r = Invoke-WebRequest -UseBasicParsing http://127.0.0.1:4723/wd/hub/status -TimeoutSec 2; if ($r.StatusCode -eq 200) { $ready = $true } }
-              catch {}
-              Start-Sleep -Seconds 2
+
+    stages {
+        stage('Fetch Code') {
+            steps {
+                // Pulls the latest code from your GitHub repo
+                checkout scm
             }
-            if (-not $ready) { exit 1 }
-          "
-        '''
-      }
-    }
-    stage('Run Tests') {
-      steps {
-        bat 'mvn test' // or your test runner command
-      }
-      post {
-        always {
-          junit 'target/surefire-reports/*.xml'
-          archiveArtifacts artifacts: 'appium.log', allowEmptyArchive: true
         }
-      }
+
+        stage('Build & Dependencies') {
+            steps {
+                // Compiles the Java code and downloads Maven dependencies
+                bat 'mvn clean compile'
+            }
+        }
+
+        stage('Execute Automation') {
+            steps {
+                script {
+                    try {
+                        // Runs the tests. Your code will "Attach" to the Delta1 window
+                        bat 'mvn test'
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        echo "Tests failed: ${e.message}"
+                    }
+                }
+            }
+        }
     }
-    stage('Teardown') {
-      steps {
-        // stop Appium (kill by port or process name)
-        bat 'for /f "tokens=5" %%a in (\'netstat -ano ^| findstr :4723\') do taskkill /PID %%a /F || echo "no appium process"'
-      }
+
+    post {
+        always {
+            // Archive test results (JUnit/Surefire) so you can see them in Jenkins
+            junit '**/target/surefire-reports/*.xml'
+            
+            // Optional: Cleanup workspace
+            cleanWs()
+        }
     }
-  }
 }

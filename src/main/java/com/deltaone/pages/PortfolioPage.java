@@ -16,6 +16,7 @@ public class PortfolioPage {
 	WindowsDriver driver;
     WebDriverWait wait;
     
+    
     public PortfolioPage(WindowsDriver driver) {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
@@ -45,15 +46,22 @@ public class PortfolioPage {
     }
     
     public void ShowHideColumns_AllFields(){
+    	WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
     	driver.findElement(By.name("AutBtnViewHidePosition")).click();
-    	if(driver.findElement(By.name("Select All")).getAttribute("Toggle.ToggleState").equals("0")){
-    		driver.findElement(By.name("Select All")).click();
-    		System.out.println("Selected all columns");
-    	}
-    	else {
-    		System.out.println("All columns are already selected");
-    	}
-    	driver.findElement(By.name("CloseCommand")).click();	
+    	WebElement selectAllBtn = wait.until(
+    	        ExpectedConditions.elementToBeClickable(By.name("Select All"))
+    	    );
+
+    	    // 4. Check Toggle State
+    	    if (selectAllBtn.getAttribute("Toggle.ToggleState").equals("0")) {
+    	        selectAllBtn.click();
+    	        System.out.println("Selected all columns");
+    	    } else {
+    	        System.out.println("All columns are already selected");
+    	    }
+
+    	    // 5. Click Close
+    	    driver.findElement(By.name("CloseCommand")).click();
     }
     
     	public Map<String, Object> parseEntry(String singleEntry) {

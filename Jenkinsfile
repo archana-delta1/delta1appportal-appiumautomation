@@ -5,9 +5,12 @@ pipeline {
         stage('Cleanup Environment') {
             steps {
                 echo "Cleaning up background processes..."
-                // Using /FI "STATUS eq RUNNING" and 'exit 0' prevents the crash you saw
-                bat 'taskkill /F /IM WinAppDriver.exe /T /FI "STATUS eq RUNNING" || exit 0'
-                bat 'taskkill /F /IM node.exe /T /FI "STATUS eq RUNNING" || exit 0'
+                bat """
+           		 @echo off
+           		 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :4725') do taskkill /F /PID %%a /T || echo Port 4725 already free
+           		 taskkill /F /IM WinAppDriver.exe /T /FI "STATUS eq RUNNING" || exit 0
+           		 taskkill /F /IM node.exe /T /FI "STATUS eq RUNNING" || exit 0
+      			  """
             }
         }
 

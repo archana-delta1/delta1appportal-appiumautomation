@@ -10,7 +10,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.testng.annotations.*;
-
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import java.io.File;
+import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -150,6 +154,20 @@ public class BaseTest {
         driver = new WindowsDriver(dynamicUrl, appOptions);
         Log.step("Main Driver Session established successfully.");
         ScreenshotUtil.setDriver(driver);
+    }
+    
+    public void captureScreen(String fileName) {
+        // 1. Take the screenshot from the Appium/WinAppDriver session
+        File srcFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+        
+        // 2. Save it to the 'target/screenshots' folder
+        String path = System.getProperty("user.dir") + "/target/screenshots/" + fileName + ".png";
+        try {
+            FileUtils.copyFile(srcFile, new File(path));
+            System.out.println("Screenshot saved to: " + path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @AfterSuite(alwaysRun = true)

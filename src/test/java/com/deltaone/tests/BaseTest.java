@@ -176,6 +176,20 @@ public class BaseTest {
         }
     }
     
+    @AfterClass(alwaysRun = true)
+    public void closeSession() {
+        if (driver != null) {
+            try {
+                System.out.println("Closing session for the current test class...");
+                driver.quit();
+            } catch (Exception e) {
+                System.out.println("Session already closed.");
+            } finally {
+                driver = null;
+            }
+        }
+    }
+    
     public class Log {
         // ANSI Color Codes
         public static final String RESET = "\u001B[0m";

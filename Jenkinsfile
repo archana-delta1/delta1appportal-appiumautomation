@@ -9,25 +9,25 @@ pipeline {
                 @echo off
                 :: Only kill the process specifically listening on 4725
                 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :4725') do (
-                    taskkill /F /PID %%a /T
+                    taskkill /F /PID %%a /T 2>nul
                 )
                 :: Safely kill drivers if they are stuck
-                taskkill /F /IM WinAppDriver.exe /T /FI "STATUS eq RUNNING" 2>nul || set errorlevel=0
+                taskkill /F /IM WinAppDriver.exe /T 2>nul
                 exit 0
                 """
             }
         }
 
-        stage('Checkout & Build') {
+        stage('Checkout, Build & Test') {
             steps {
                 checkout scm
-                bat 'call mvn clean compile'
+                bat 'mvn clean test'
             }
         }
+    }
 
     post {
         always {
-            // Only try to record results if they exist
             script {
                 try {
                     junit '**/target/surefire-reports/*.xml'
@@ -35,12 +35,16 @@ pipeline {
                     echo "No test results found to record."
                 }
             }
-            bat 'for /f "tokens=5" %%a in (\'netstat -aon ^| findstr :4725\') do taskkill /F /PID %%a /T 2>nul || exit 0'
+            bat """
+            @echo off
+            for /f "tokens=5" %%a in ('netstat -aon ^| findstr :4725') do taskkill /F /PID %%a /T 2>nul
+            exit 0
+            """
         }
         
         failure {
             echo "Pipeline Failed. Check console output for details."
-            // Commenting out Slack until you configure the credentials in Jenkins UI
             // slackSend(color: 'danger', message: "Build Failed: ${env.BUILD_URL}")
         }
     }
+} // <--- Make sure you include this final closing brace!

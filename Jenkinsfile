@@ -44,4 +44,3 @@ pipeline {
             // slackSend(color: 'danger', message: "Build Failed: ${env.BUILD_URL}")
         }
     }
-}

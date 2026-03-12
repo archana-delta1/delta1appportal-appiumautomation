@@ -69,9 +69,12 @@ public class BaseTest {
         }
     }
     */
-    @BeforeSuite  
+    @BeforeSuite (alwaysRun = true) 
 
     public void startAppiumServer() {
+    	if (service != null && service.isRunning()) {
+            return; 
+        }
         int port = 4725;
         int maxRetries = 3;
         boolean started = false;

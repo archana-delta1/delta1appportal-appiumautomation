@@ -20,7 +20,7 @@ public class AddTickersTest extends BaseTest {
     }
 
     @Test(dataProvider = "UniversalProvider", dataProviderClass = ExcelUtil.class)
-    public void addTickersFromExcel(String ticker) {
+    public void AddTickers(String ticker) {
     	Log.step("STARTING PROCESS FOR: " + ticker);        
     	Map<String, Object> data = portfolio.parseEntry(ticker);
         portfolio.addTicker(ticker);

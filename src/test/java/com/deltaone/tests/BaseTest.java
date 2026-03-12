@@ -69,45 +69,29 @@ public class BaseTest {
         }
     }
     */
-    @BeforeSuite (alwaysRun = true) 
-
+    @BeforeSuite(alwaysRun = true) 
     public void startAppiumServer() {
-    	if (service != null && service.isRunning()) {
+        if (service != null && service.isRunning()) {
             return; 
         }
-        int port = 4725;
-        int maxRetries = 3;
-        boolean started = false;
 
-        while (maxRetries > 0 && !started) {
-            try {
-                // 1. Clean up the specific port we want to use
-              //  killProcessByPort(port);
-                
-                AppiumServiceBuilder builder = new AppiumServiceBuilder()
-                        .usingDriverExecutable(new File("C:\\Program Files\\nodejs\\node.exe"))
-                        .withAppiumJS(new File("C:\\Users\\Archana\\AppData\\Roaming\\npm\\node_modules\\appium\\build\\lib\\main.js"))
-                        .withIPAddress("127.0.0.1")
-                        .usingPort(port)
-                        .withArgument(GeneralServerFlag.SESSION_OVERRIDE)
-                        .withArgument(GeneralServerFlag.LOG_LEVEL, "error");
+        try {
+            AppiumServiceBuilder builder = new AppiumServiceBuilder()
+                    .usingDriverExecutable(new File("C:\\Program Files\\nodejs\\node.exe"))
+                    .withAppiumJS(new File("C:\\Users\\Archana\\AppData\\Roaming\\npm\\node_modules\\appium\\build\\lib\\main.js"))
+                    .withIPAddress("127.0.0.1")
+                    .usingAnyFreePort() // <-- Let Appium find an open port automatically!
+                    .withArgument(GeneralServerFlag.SESSION_OVERRIDE)
+                    .withArgument(GeneralServerFlag.LOG_LEVEL, "error");
 
-                service = AppiumDriverLocalService.buildService(builder);
-                service.start();
-                
-                if (service.isRunning()) {
-                    Log.step("Appium Server started on port: " + port);
-                    started = true;
-                }
-            } catch (Exception e) {
-                Log.info("Port " + port + " is busy/locked. Retrying with next port...");
-                port++;
-                maxRetries--;
+            service = AppiumDriverLocalService.buildService(builder);
+            service.start();
+            
+            if (service.isRunning()) {
+                Log.step("Appium Server started successfully on a dynamic port.");
             }
-        }
-
-        if (!started) {
-            throw new RuntimeException("Could not start Appium server after multiple attempts.");
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to start Appium server: " + e.getMessage());
         }
     }
 
@@ -176,8 +160,20 @@ public class BaseTest {
 
     @AfterSuite(alwaysRun = true)
     public void tearDown() {
-        if (driver != null) driver.quit();
-        if (service != null) service.stop();
+        if (driver != null) {
+            try {
+                System.out.println("Attempting to quit the session...");
+                driver.quit();
+                System.out.println("Session closed successfully.");
+            } catch (org.openqa.selenium.NoSuchSessionException e) {
+                System.out.println("Session was already terminated or lost. Skipping quit.");
+            } catch (Exception e) {
+                System.out.println("An unexpected error occurred during teardown: " + e.getMessage());
+            } finally {
+                // Ensure the driver object is cleared from memory
+                driver = null; 
+            }
+        }
     }
     
     public class Log {

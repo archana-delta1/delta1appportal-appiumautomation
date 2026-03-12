@@ -23,7 +23,7 @@ public class PortfolioPage {
     }
     
     private By singleEntryField = By.name("AuttxtSingleEntry");
-    private By portfolioTab = By.xpath("//TabItem[@Name='AuttbPortfolio']");
+    private By portfolioTab = By.name("AuttbPortfolio");
     private By okButtonPopup = By.xpath("//Window/Window[1]/Custom[1]/Button[2]");
     private By invalidPopup = By.xpath("//Window/Window[1]");
     

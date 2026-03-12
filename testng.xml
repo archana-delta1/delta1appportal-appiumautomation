@@ -4,6 +4,8 @@
     <test name="Desktop Tests">
         <classes>
             <class name="com.deltaone.tests.AddTickersTest"/>
+            <class name="com.deltaone.tests.BotCommandsTest"/>
+
         </classes>
     </test>
 </suite>

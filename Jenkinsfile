@@ -4,13 +4,17 @@ pipeline {
     stages {
         stage('Cleanup Environment') {
             steps {
-                echo "Cleaning up background processes..."
+                echo "Cleaning up port 4725..."
                 bat """
-           		 @echo off
-           		 for /f "tokens=5" %%a in ('netstat -aon ^| findstr :4725') do taskkill /F /PID %%a /T || echo Port 4725 already free
-           		 taskkill /F /IM WinAppDriver.exe /T /FI "STATUS eq RUNNING" || exit 0
-           		 taskkill /F /IM node.exe /T /FI "STATUS eq RUNNING" || exit 0
-      			  """
+                @echo off
+                :: Only kill the process specifically listening on 4725
+                for /f "tokens=5" %%a in ('netstat -aon ^| findstr :4725') do (
+                    taskkill /F /PID %%a /T
+                )
+                :: Safely kill drivers if they are stuck
+                taskkill /F /IM WinAppDriver.exe /T /FI "STATUS eq RUNNING" 2>nul || set errorlevel=0
+                exit 0
+                """
             }
         }
 
@@ -20,14 +24,6 @@ pipeline {
                 bat 'call mvn clean compile'
             }
         }
-
-        stage('Execute Delta1 Automation') {
-            steps {
-                // Ensure your Delta1 Window is open before this starts!
-                bat 'call mvn test'
-            }
-        }
-    }
 
     post {
         always {
@@ -39,6 +35,7 @@ pipeline {
                     echo "No test results found to record."
                 }
             }
+            bat 'for /f "tokens=5" %%a in (\'netstat -aon ^| findstr :4725\') do taskkill /F /PID %%a /T 2>nul || exit 0'
         }
         
         failure {

@@ -19,7 +19,7 @@ public class AddTickersTest extends BaseTest {
         portfolio.ShowHideColumns_AllFields();
     }
 
-    @Test(dataProvider = "multiSheetProvider", dataProviderClass = ExcelUtil.class)
+    @Test(dataProvider = "UniversalProvider", dataProviderClass = ExcelUtil.class)
     public void addTickersFromExcel(String ticker) {
     	Log.step("STARTING PROCESS FOR: " + ticker);        
     	Map<String, Object> data = portfolio.parseEntry(ticker);

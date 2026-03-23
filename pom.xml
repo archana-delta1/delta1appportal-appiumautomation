@@ -78,6 +78,12 @@
         <artifactId>poi-ooxml</artifactId>
         <version>5.2.5</version>
     </dependency>
+    
+    <dependency>
+    <groupId>com.microsoft.sqlserver</groupId>
+    <artifactId>mssql-jdbc</artifactId>
+    <version>12.4.2.jre11</version> 
+</dependency>
 	</dependencies>
 
 
@@ -103,7 +109,10 @@
                     <suiteXmlFiles>
                         <suiteXmlFile>testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
-                </configuration>
+                    
+                    <trimStackTrace>true</trimStackTrace>
+                    <printSummary>true</printSummary>
+                    <useFile>false</useFile> </configuration>
             </plugin>
         </plugins>
     </build>

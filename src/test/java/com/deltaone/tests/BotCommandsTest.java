@@ -49,7 +49,12 @@ public class BotCommandsTest extends BaseTest {
             int actualAdded = parseBotCount(botText, "Added");
             int countAfter = botPage.getPortfolioItemCount();
             int expectedFinalCount = countBefore + actualAdded;
-
+           /* try {
+                new WebDriverWait(driver, Duration.ofSeconds(10))
+                    .until(d -> botPage.getPortfolioItemCount() == expectedFinalCount);
+            } catch (org.openqa.selenium.TimeoutException e) {
+                System.err.println("Timeout waiting for UI DataGrid to render the new rows.");
+            }*/
             Assert.assertEquals(actualAdded, expectedValid, "Bot 'Added' count mismatch!");
             Assert.assertEquals(countAfter, expectedFinalCount, "Portfolio UI count mismatch!");
 
@@ -64,7 +69,7 @@ public class BotCommandsTest extends BaseTest {
         try {
             botPage.sendChordToBot(Keys.F2); 
             botPage.closeBotWindow();
-            botPage.deletePortfolio();
+            //botPage.deletePortfolio();
         } catch (Exception e) {
             System.out.println("Cleanup error: " + e.getMessage());
         }

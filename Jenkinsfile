@@ -25,10 +25,15 @@ pipeline {
             }
         }
 
-        stage('Execute Automated Test Suite') {
-    steps {
-        withCredentials([usernamePassword(credentialsId: 'YOUR_CREDENTIAL_ID', passwordVariable: 'SECRET_PASS', usernameVariable: 'SECRET_USER')]) {
-            script {
+        stage('Execute Automated Test Suite') {           
+            steps {
+                // 1. Securely pull the secrets from the vault
+                withCredentials([
+                    string(credentialsId: 'DB_USERNAME_SECRET', variable: 'SECRET_USER'),
+                    string(credentialsId: 'DB_PASSWORD_SECRET', variable: 'SECRET_PASS')
+                ]) {
+                    // 2. Create the config.properties file on the fly
+                    script {
                 // 1. Construct the file content natively in Groovy
                 def configContent = """db.host=127.0.0.1
 db.port=1433
@@ -42,9 +47,9 @@ db.password=${SECRET_PASS}"""
             
             // 3. Run your tests (replace 'mvn test' with your actual test execution command)
             bat 'mvn clean test' 
+                }
+            }
         }
-    }
-}
     } 
 
     post {

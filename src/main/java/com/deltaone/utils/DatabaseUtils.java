@@ -8,9 +8,7 @@ public class DatabaseUtils {
 
     private static Properties props = new Properties();
 
-    // Load configuration once when the class is loaded
     static {
-        // Dynamically build the exact path from the project root
         String projectPath = System.getProperty("user.dir");
         String propertyFilePath = projectPath + "/src/test/resources/config.properties";
 
@@ -47,13 +45,11 @@ public class DatabaseUtils {
 
         try (Connection conn = DriverManager.getConnection(url, user, pass)) {
             
-            // 1. Validate connection
             try (Statement stmt = conn.createStatement()) {
                 stmt.executeQuery("SELECT 1");
                 System.out.println("Connection validated.");
             }
 
-            // 2. Fetch SQL Version
             try (Statement stmt = conn.createStatement();
                  ResultSet rs = stmt.executeQuery("SELECT @@VERSION AS SqlVersion")) {
                 if (rs.next()) {
@@ -61,7 +57,6 @@ public class DatabaseUtils {
                 }
             }
 
-            // 3. Fetch Application Settings
             String query = "SELECT [AppKey], [AppValue] FROM [DeltaOne].[dbo].[ApplicationSettings]";
             try (Statement stmt = conn.createStatement();
                  ResultSet rs = stmt.executeQuery(query)) {

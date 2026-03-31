@@ -33,7 +33,7 @@ pipeline {
                 ]) {
                     // 2. Create the config.properties file on the fly (Windows batch command)
                     bat """
-                        echo db.host=localhost > src\\test\\resources\\config.properties
+                        echo db.host=127.0.0.1 > src\\test\\resources\\config.properties
                         echo db.port=1433 >> src\\test\\resources\\config.properties
                         echo db.name=OptionBlotter >> src\\test\\resources\\config.properties
                         echo db.user=%SECRET_USER% >> src\\test\\resources\\config.properties

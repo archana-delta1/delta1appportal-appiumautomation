@@ -1,6 +1,6 @@
 package com.deltaone.utils;
 
-import java.io.InputStream;
+import java.io.FileInputStream;
 import java.sql.*;
 import java.util.Properties;
 
@@ -10,13 +10,17 @@ public class DatabaseUtils {
 
     // Load configuration once when the class is loaded
     static {
-        try (InputStream input = DatabaseUtils.class.getClassLoader().getResourceAsStream("config.properties")) {
-            if (input == null) {
-                throw new RuntimeException("Sorry, unable to find config.properties in src/test/resources");
-            }
-            props.load(input);
+        // Dynamically build the exact path from the project root
+        String projectPath = System.getProperty("user.dir");
+        String propertyFilePath = projectPath + "/src/test/resources/config.properties";
+
+        try (FileInputStream fis = new FileInputStream(propertyFilePath)) {
+            props.load(fis);
+            System.out.println("Successfully loaded config.properties from: " + propertyFilePath);
         } catch (Exception e) {
+            System.err.println("CRITICAL ERROR: Could not load config.properties at " + propertyFilePath);
             e.printStackTrace();
+            throw new RuntimeException("Sorry, unable to find config.properties at " + propertyFilePath);
         }
     }
 
@@ -26,6 +30,7 @@ public class DatabaseUtils {
                 props.getProperty("db.port"),
                 props.getProperty("db.name"));
     }
+
     public static Connection getConnection() throws SQLException {
         String url = getJdbcUrl();
         String user = props.getProperty("db.user");

@@ -44,21 +44,17 @@ public class BlotterPage extends BasePage {
         System.out.println("Applying Custom Date Range. Use Today Checkbox? " + useTodayCheckbox);
         System.out.println("Applying Custom Date Range: " + uiStartDate + " to " + uiEndDate);
 
-        // 1. Click the "Custom" toggle button
         wait.until(ExpectedConditions.visibilityOfElementLocated(customBtn)).click();
         
-        // 2. Locate the START Date Box
         WebElement startParentContainer = wait.until(ExpectedConditions.visibilityOfElementLocated(startDateParent));
         WebElement startField = startParentContainer.findElement(internalTextBox);
         
-        // Brute Force Clear: Click, go to the end, and backspace 10 times
         startField.click();
         startField.sendKeys(Keys.END);
         for (int i = 0; i < 10; i++) {
             startField.sendKeys(Keys.BACK_SPACE);
         }
         
-        // Now that it's empty, type the new date
         startField.sendKeys(uiStartDate);
         startField.sendKeys(Keys.TAB);      
         
@@ -75,16 +71,13 @@ public class BlotterPage extends BasePage {
             chkToday.sendKeys(Keys.ENTER); 
             
         } else {
-            // We WANT a custom date. If the box is checked, UNCHECK it to unlock the field!
             if (isChecked) {
                 chkToday.click();
             }
         
-        // 3. Locate the END Date Box
         WebElement endParentContainer = driver.findElement(endDateParent);
         WebElement endField = endParentContainer.findElement(internalTextBox);
         
-        // Brute Force Clear for the End Date
         endField.click();
         endField.sendKeys(Keys.END);
         for (int i = 0; i < 10; i++) {
@@ -94,7 +87,6 @@ public class BlotterPage extends BasePage {
         endField.sendKeys(uiEndDate);
         endField.sendKeys(Keys.ENTER); 
         
-        // 4. Wait for the grid to update
         waitForDataToLoad();
         }
     }
@@ -140,25 +132,19 @@ public class BlotterPage extends BasePage {
         WebElement tickerField = wait.until(ExpectedConditions.visibilityOfElementLocated(tickersInput));
         WebElement expField = wait.until(ExpectedConditions.visibilityOfElementLocated(expirationsInput));
 
-        // 1. STRICT TICKER CHECK
         if (tickers != null && !tickers.trim().isEmpty()) {
-            // Data exists: Clear any old junk, then type the new data
             forceClear(tickerField);
             enterMultiLineText(tickerField, tickers);
         } else {
-            // No data in Excel: Enforce that the field is completely empty!
             System.out.println("   -> No Ticker data provided. Forcing Ticker field to clear.");
             forceClear(tickerField);
         }
         tickerField.sendKeys(Keys.TAB); 
 
-        // 2. STRICT EXPIRATION CHECK
         if (expirations != null && !expirations.trim().isEmpty()) {
-            // Data exists: Clear any old junk, then type the new data
             forceClear(expField);
             enterMultiLineText(expField, expirations);
         } else {
-            // No data in Excel: Enforce that the field is completely empty!
             System.out.println("   -> No Expiration data provided. Forcing Expiration field to clear.");
             forceClear(expField);
         }
@@ -169,7 +155,7 @@ public class BlotterPage extends BasePage {
     
     private void waitForDataToLoad() {
     try {
-            Thread.sleep(2000); // 2 second pause to let the grid refresh
+            Thread.sleep(2000); 
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

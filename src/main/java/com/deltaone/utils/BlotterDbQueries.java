@@ -91,7 +91,6 @@ public class BlotterDbQueries {
                 tradeHistoryCount = rsHistory.getInt("TradeCount");
             }
 
-            // Execute Today's Matches Query (Only if dates aren't restricted to Yesterday)
             if (startDate != null && endDate != null && !(yesterdayStr.equals(startDate) && yesterdayStr.equals(endDate))) {
                 
                 // NOTE: If TodaysMatches also needs to be filtered by Ticker/Expiration, 

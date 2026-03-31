@@ -3,8 +3,8 @@
 <suite name="Delta1 Automation Suite">
     <test name="Desktop Tests">
         <classes>
-          <!--  <class name="com.deltaone.tests.AddTickersTest"/> --> 
-          <!--  <class name="com.deltaone.tests.BotCommandsTest"/> --> 
+          <class name="com.deltaone.tests.AddTickersTest"/>
+           <class name="com.deltaone.tests.BotCommandsTest"/> 
             <class name="com.deltaone.tests.BlotterFilterTest"/>
         </classes>
     </test>

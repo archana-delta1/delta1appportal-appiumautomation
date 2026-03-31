@@ -36,7 +36,7 @@ pipeline {
                     bat """
                         echo db.host=127.0.0.1 > src\\test\\resources\\config.properties
                         echo db.port=1433 >> src\\test\\resources\\config.properties
-                        echo db.name=OptionBlotter >> src\\test\\resources\\config.properties
+                        echo db.name=DeltaOne >> src\\test\\resources\\config.properties
                         echo db.user=%SECRET_USER% >> src\\test\\resources\\config.properties
                         echo db.password=%SECRET_PASS% >> src\\test\\resources\\config.properties
                     """
@@ -49,7 +49,7 @@ pipeline {
                 }
             }
         }
-    } // <-- THIS WAS THE MISSING CLOSING BRACKET FOR STAGES
+    } 
 
     post {
         always {

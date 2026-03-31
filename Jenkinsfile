@@ -24,6 +24,27 @@ pipeline {
                 bat 'mvn clean test'
             }
         }
+	stage('Execute Automated Test Suite') {           
+		 steps {
+                // 1. securely pull the secrets from the vault
+                withCredentials([
+                    string(credentialsId: 'DB_USERNAME_SECRET', variable: 'SECRET_USER'),
+                    string(credentialsId: 'DB_PASSWORD_SECRET', variable: 'SECRET_PASS')
+                ]) {
+                    // 2. Create the config.properties file on the fly (Windows batch command)
+                    bat """
+                        echo db.host=localhost > src\\test\\resources\\config.properties
+                        echo db.port=1433 >> src\\test\\resources\\config.properties
+                        echo db.name=OptionBlotter >> src\\test\\resources\\config.properties
+                        echo db.user=%SECRET_USER% >> src\\test\\resources\\config.properties
+                        echo db.password=%SECRET_PASS% >> src\\test\\resources\\config.properties
+                    """
+                    
+                    // 3. Run the tests
+                    bat 'mvn clean test-compile test'
+                }
+            }
+        }
     }
 
     post {
@@ -47,4 +68,4 @@ pipeline {
             // slackSend(color: 'danger', message: "Build Failed: ${env.BUILD_URL}")
         }
     }
-} // <--- Make sure you include this final closing brace!
+} 

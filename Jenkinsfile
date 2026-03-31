@@ -35,11 +35,11 @@ pipeline {
                     // 2. Create the config.properties file on the fly
                     script {
                 // 1. Construct the file content natively in Groovy
-                def configContent = """db.host=127.0.0.1
-db.port=1433
-db.name=DeltaOne
-db.user=${SECRET_USER}
-db.password=${SECRET_PASS}"""
+                def configContent = """db.host=34.85.224.164
+									   db.port=1433
+									   db.name=DeltaOne
+									   db.user=${SECRET_USER}
+									   db.password=${SECRET_PASS}"""
                 
                 // 2. Write the file directly using Jenkins native step
                 writeFile file: 'src/test/resources/config.properties', text: configContent

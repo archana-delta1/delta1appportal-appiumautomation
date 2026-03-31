@@ -25,30 +25,26 @@ pipeline {
             }
         }
 
-        stage('Execute Automated Test Suite') {           
-            steps {
-                // 1. Securely pull the secrets from the vault
-                withCredentials([
-                    string(credentialsId: 'DB_USERNAME_SECRET', variable: 'SECRET_USER'),
-                    string(credentialsId: 'DB_PASSWORD_SECRET', variable: 'SECRET_PASS')
-                ]) {
-                    // 2. Create the config.properties file on the fly
-                    bat """
-                        echo db.host=127.0.0.1 > src\\test\\resources\\config.properties
-                        echo db.port=1433 >> src\\test\\resources\\config.properties
-                        echo db.name=DeltaOne >> src\\test\\resources\\config.properties
-                        echo db.user=%SECRET_USER% >> src\\test\\resources\\config.properties
-                        echo db.password=%SECRET_PASS% >> src\\test\\resources\\config.properties
-                    """
-                    
-                    // 3. Verify it was written (Debugging only, remove this later so it doesn't print passwords!)
-                    bat 'type src\\test\\resources\\config.properties'
-                    
-                    // 4. NOW run the tests while the file exists
-                    bat 'mvn clean test'
-                }
+        stage('Execute Automated Test Suite') {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'YOUR_CREDENTIAL_ID', passwordVariable: 'SECRET_PASS', usernameVariable: 'SECRET_USER')]) {
+            script {
+                // 1. Construct the file content natively in Groovy
+                def configContent = """db.host=127.0.0.1
+db.port=1433
+db.name=DeltaOne
+db.user=${SECRET_USER}
+db.password=${SECRET_PASS}"""
+                
+                // 2. Write the file directly using Jenkins native step
+                writeFile file: 'src/test/resources/config.properties', text: configContent
             }
+            
+            // 3. Run your tests (replace 'mvn test' with your actual test execution command)
+            bat 'mvn clean test' 
         }
+    }
+}
     } 
 
     post {

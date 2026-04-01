@@ -38,7 +38,6 @@ public class BlotterDbQueries {
         }
 
         // Append Expiration Logic
-     // Append Expiration Logic
         if (expirations != null && !expirations.trim().isEmpty()) {
             historyQuery += " AND (";
             String normalizedExpirations = expirations.replaceAll("[\\n\\r]+", ",");
@@ -57,10 +56,11 @@ public class BlotterDbQueries {
                     String outerDate = DateUtils.convertExpirationToDate(legs[1]);
                     
                     if (innerDate != null && outerDate != null) {
-                        historyQuery += "([InnerExpiry] = '" + innerDate + "' AND [OuterExpiry] = '" + outerDate + "')";
+                        // ADDED: isMultileg = 1 condition
+                        historyQuery += "(isMultileg = 1 AND [InnerExpiry] = '" + innerDate + "' AND [OuterExpiry] = '" + outerDate + "')";
                     } else {
                         // Fallback just in case parsing failed
-                        historyQuery += "(Contract LIKE '%" + legs[0].trim() + "%' AND Contract LIKE '%" + legs[1].trim() + "%')";
+                        historyQuery += "(isMultileg = 1 AND Contract LIKE '%" + legs[0].trim() + "%' AND Contract LIKE '%" + legs[1].trim() + "%')";
                     }
                     
                 } else {
@@ -68,10 +68,11 @@ public class BlotterDbQueries {
                     String exactDate = DateUtils.convertExpirationToDate(expItem);
                     
                     if (exactDate != null) {
-                        historyQuery += "Term = '" + exactDate + "'";
+                        // ADDED: isMultileg = 0 condition
+                        historyQuery += "(isMultileg = 0 AND Term = '" + exactDate + "')";
                     } else {
                         // Fallback just in case parsing failed
-                        historyQuery += "Contract LIKE '%" + expItem + "%'";
+                        historyQuery += "(isMultileg = 0 AND Contract LIKE '%" + expItem + "%')";
                     }
                 }
                 addedCondition = true;

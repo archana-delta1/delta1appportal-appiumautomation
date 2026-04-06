@@ -129,12 +129,10 @@ public class BlotterFilterTest extends BaseTest {
 
         blotterPage.clickWhiteBoard(); 
         blotterPage.applyTextFilters("", "");
-        // Pass TRUE to check the box. We can pass anything for uiEndDate since it will be ignored!
         blotterPage.enterCustomDateRange(randomDates.uiStartDate, "IGNORED", true);
         
         int uiCount = blotterPage.getDisplayedTradeCount();
         
-        // Query the database using the random start date, and TODAY as the end date
         int dbCount = dbQueries.getDatabaseTradeCount(randomDates.dbStartDate, todayDbFormat);
 
         Assert.assertEquals(uiCount, dbCount, "Mismatch for Custom Date using Today Checkbox!");

@@ -14,15 +14,12 @@ public class BlotterDbQueries {
         int todaysMatchesCount = 0;
         String yesterdayStr = LocalDate.now().minusDays(1).toString();
 
-        // --- 1. TRADE HISTORY QUERY ---
         String historyQuery = "SELECT COUNT(*) AS TradeCount FROM [DeltaOne].[dbo].[TradeHistory] WHERE 1=1 ";
 
-        // Append Date Logic
         if (startDate != null && endDate != null) {
             historyQuery += " AND CAST(DateTime AS DATE) >= '" + startDate + "' AND CAST(DateTime AS DATE) <= '" + endDate + "'";
         }
 
-        // Append Ticker Logic
         if (tickers != null && !tickers.trim().isEmpty()) {
             String normalizedTickers = tickers.replaceAll("[\\n\\r\\s]+", ",");	
             String[] tickerArray = normalizedTickers.split(",");
@@ -37,7 +34,6 @@ public class BlotterDbQueries {
             historyQuery += " AND Ticker IN (" + finalTickers + ") ";
         }
 
-        // Append Expiration Logic
         if (expirations != null && !expirations.trim().isEmpty()) {
             historyQuery += " AND (";
             String normalizedExpirations = expirations.replaceAll("[\\n\\r]+", ",");
@@ -50,26 +46,21 @@ public class BlotterDbQueries {
                 if (addedCondition) historyQuery += " OR ";
                 
                 if (expItem.contains("/")) {
-                    // MULTI-LEG LOGIC (e.g., "Mar/May")
                     String[] legs = expItem.split("/");
-                    String innerDate = DateUtils.convertExpirationToDate(legs[0]);
-                    String outerDate = DateUtils.convertExpirationToDate(legs[1]);
+                    String innerCondition = buildDateCondition("[InnerExpiry]", legs[0]);
+                    String outerCondition = buildDateCondition("[OuterExpiry]", legs[1]);
                     
-                    if (innerDate != null && outerDate != null) {
-                        // ADDED: isMultileg = 1 condition
-                        historyQuery += "(isMultileg = 1 AND [InnerExpiry] = '" + innerDate + "' AND [OuterExpiry] = '" + outerDate + "')";
+                    if (innerCondition != null && outerCondition != null) {
+                        historyQuery += "(isMultileg = 1 AND " + innerCondition + " AND " + outerCondition + ")";
                     } else {
-                        // Fallback just in case parsing failed
                         historyQuery += "(isMultileg = 1 AND Contract LIKE '%" + legs[0].trim() + "%' AND Contract LIKE '%" + legs[1].trim() + "%')";
                     }
                     
                 } else {
-                    // SINGLE EXPRIATION LOGIC (e.g., "mar6", "mar'25")
-                    String exactDate = DateUtils.convertExpirationToDate(expItem);
+                    String singleCondition = buildDateCondition("Term", expItem);
                     
-                    if (exactDate != null) {
-                        // ADDED: isMultileg = 0 condition
-                        historyQuery += "(isMultileg = 0 AND Term = '" + exactDate + "')";
+                    if (singleCondition != null) {
+                        historyQuery += "(isMultileg = 0 AND " + singleCondition + ")";
                     } else {
                         // Fallback just in case parsing failed
                         historyQuery += "(isMultileg = 0 AND Contract LIKE '%" + expItem + "%')";
@@ -93,10 +84,6 @@ public class BlotterDbQueries {
             }
 
             if (startDate != null && endDate != null && !(yesterdayStr.equals(startDate) && yesterdayStr.equals(endDate))) {
-                
-                // NOTE: If TodaysMatches also needs to be filtered by Ticker/Expiration, 
-                // you must append the exact same StringBuilder logic to this query below!
-                // Assuming standard volume for now.
                 String todaysQuery = "SELECT COUNT(tm.Id) AS TodayTradesCount " +
                     "FROM [DeltaOne].[dbo].[TodaysMatches] AS tm " +
                     "LEFT JOIN [DeltaOne].[dbo].[TodaysOrder] AS to_buy ON tm.BuyOrderId = to_buy.OrderId " +
@@ -116,7 +103,7 @@ public class BlotterDbQueries {
         return tradeHistoryCount + todaysMatchesCount;
     }
     
-     public int getDatabaseTradeCount(String startDate, String endDate) {
+    public int getDatabaseTradeCount(String startDate, String endDate) {
         int tradeHistoryCount = 0;
         int todaysMatchesCount = 0;
 
@@ -147,11 +134,90 @@ public class BlotterDbQueries {
                     todaysMatchesCount = rsTodays.getInt("TodayTradesCount");
                 }
             } 
-           
 
         } catch (Exception e) {
             System.err.println("Failed to fetch DB counts: " + e.getMessage());
         }
         return tradeHistoryCount + todaysMatchesCount;
+    }
+
+    // --- NEW DATE PARSING LOGIC ---
+    /**
+     * Parses financial expiry strings (e.g., "Mar", "Apr24", "Mar'26") and returns a SQL condition.
+     */
+    private String buildDateCondition(String columnName, String expItem) {
+        expItem = expItem.trim();
+        if (expItem.isEmpty()) return null;
+
+        LocalDate today = LocalDate.now();
+        int currentMonth = today.getMonthValue();
+        int currentYear = today.getYear();
+
+        // Extract month string (e.g., "Apr24" -> "Apr")
+        String monthStr = expItem.replaceAll("[^a-zA-Z]", "");
+        if (monthStr.length() > 3) monthStr = monthStr.substring(0, 3); // Normalize to 3 chars
+        
+        int month = getMonthNumber(monthStr);
+        if (month == -1) return null; // Invalid month, trigger fallback
+
+        Integer day = null;
+        Integer year = null;
+
+        try {
+            // Extract numerical/symbol modifiers (e.g., "Apr24" -> "24", "Mar'26" -> "'26")
+            String modifiers = expItem.replaceAll("[a-zA-Z\\s]", "");
+            
+            if (modifiers.contains("'")) {
+                // Rule: Has an apostrophe -> It is an explicit year (e.g., '26)
+                String yearStr = modifiers.replace("'", "");
+                if (yearStr.length() == 2) {
+                    year = 2000 + Integer.parseInt(yearStr);
+                } else if (yearStr.length() == 4) {
+                    year = Integer.parseInt(yearStr);
+                }
+            } else if (!modifiers.isEmpty()) {
+                // Rule: Has digits but no apostrophe -> It is an explicit day (e.g., 24)
+                day = Integer.parseInt(modifiers);
+            }
+        } catch (NumberFormatException e) {
+            return null; // Safe fallback if parsing fails
+        }
+
+        // Rule: Calculate rolling year if not explicitly provided via '
+        if (year == null) {
+            if (month < currentMonth) {
+                year = currentYear + 1; // Month already passed this year, roll to next year
+            } else {
+                year = currentYear;     // Month is current or future, use current year
+            }
+        }
+
+        // Build the final SQL string
+        if (day != null) {
+            // Rule: Specific Day requested -> Match exact date (YYYY-MM-DD)
+            String exactDate = String.format("%04d-%02d-%02d", year, month, day);
+            return columnName + " = '" + exactDate + "'";
+        } else {
+            // Rule: No specific day requested -> Match ANY date in that month & year
+        	return "(YEAR(TRY_CAST(" + columnName + " AS DATE)) = " + year + " AND MONTH(TRY_CAST(" + columnName + " AS DATE)) = " + month + ")";
+        	}
+    }
+
+    private int getMonthNumber(String monthStr) {
+        switch (monthStr.toLowerCase()) {
+            case "jan": return 1;
+            case "feb": return 2;
+            case "mar": return 3;
+            case "apr": return 4;
+            case "may": return 5;
+            case "jun": return 6;
+            case "jul": return 7;
+            case "aug": return 8;
+            case "sep": return 9;
+            case "oct": return 10;
+            case "nov": return 11;
+            case "dec": return 12;
+            default: return -1;
+        }
     }
 }

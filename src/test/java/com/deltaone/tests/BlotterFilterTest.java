@@ -36,13 +36,11 @@ public class BlotterFilterTest extends BaseTest {
         blotterPage.clickWhiteBoard(); 
         blotterPage.applyTextFilters(tickers, expirations);
 
-        // --- NEW: THE DECK OF CARDS USING YOUR EXISTING DATAPROVIDER ---
         
         int numFiltersToTest = java.util.concurrent.ThreadLocalRandom.current().nextInt(1, 3); 
         List<String> filtersToRun = new ArrayList<>();
 
         for (int i = 0; i < numFiltersToTest; i++) {
-            // If the deck is empty, refill it using your getFilters() method!
             if (filterDeck.isEmpty()) {
                 Object[][] filterArray = getFilters(); // Calls your existing DataProvider
                 for (Object[] row : filterArray) {
@@ -56,7 +54,6 @@ public class BlotterFilterTest extends BaseTest {
 
         System.out.println("   -> Selected Filters for this row: " + filtersToRun);
 
-        // --- THE REST OF YOUR TEST REMAINS EXACTLY THE SAME ---
         
         for (String filterName : filtersToRun) {
             System.out.println("   -> Applying Date Filter: " + filterName);
@@ -84,7 +81,7 @@ public class BlotterFilterTest extends BaseTest {
         DateUtils.DateRange dateRange = DateUtils.getDatesForFilter(filterName);
 
         blotterPage.clickWhiteBoard(); 
-
+        blotterPage.applyTextFilters("", "");
         blotterPage.selectFilter(filterName);
         
         int uiCount = blotterPage.getDisplayedTradeCount();
@@ -108,7 +105,7 @@ public class BlotterFilterTest extends BaseTest {
         DateUtils.CustomDatePair randomDates = DateUtils.getRandomCustomDateRange();
 
         blotterPage.clickWhiteBoard(); 
-        
+        blotterPage.applyTextFilters("", "");
         blotterPage.enterCustomDateRange(randomDates.uiStartDate, randomDates.uiEndDate, false);
         
         int uiCount = blotterPage.getDisplayedTradeCount();
@@ -131,7 +128,7 @@ public class BlotterFilterTest extends BaseTest {
         String todayDbFormat = java.time.LocalDate.now().toString();
 
         blotterPage.clickWhiteBoard(); 
-        
+        blotterPage.applyTextFilters("", "");
         // Pass TRUE to check the box. We can pass anything for uiEndDate since it will be ignored!
         blotterPage.enterCustomDateRange(randomDates.uiStartDate, "IGNORED", true);
         

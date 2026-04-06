@@ -57,51 +57,56 @@ public class DateUtils {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         switch (filterType.toUpperCase()) {
-        	case "TODAY":
-        		startDate = today;
-        		System.out.println("Today:-"+startDate);
-        		break;
-        	case "YESTERDAY":
-        		startDate = today.minusDays(1);
-        		endDate = today.minusDays(1); 
-        		System.out.println("Yesterday:-"+startDate+" , "+endDate);
-        		break;
+            case "TODAY":
+                startDate = today;
+                System.out.println("Today:-"+startDate);
+                break;
+            case "YESTERDAY":
+                // FIX: Ask the DB query class for the true business day instead of a literal minusDays(1)
+                BlotterDbQueries dbQueries = new BlotterDbQueries();
+                String trueYesterdayStr = dbQueries.getPreviousBusinessDay();
+                
+                // Parse it back to LocalDate so it plays nicely with the rest of this method
+                startDate = LocalDate.parse(trueYesterdayStr, formatter);
+                endDate = startDate; 
+                System.out.println("Yesterday (Business Day):-"+startDate+" , "+endDate);
+                break;
             case "1M":
                 startDate = today.minusMonths(1);
-        		System.out.println("1M:-"+startDate);
+                System.out.println("1M:-"+startDate);
                 break;
             case "3M":
                 startDate = today.minusDays(90); 
-        		System.out.println("3M:-"+startDate);
+                System.out.println("3M:-"+startDate);
                 break;
             case "6M":
                 startDate = today.minusMonths(6);
-        		System.out.println("6M:-"+startDate);
+                System.out.println("6M:-"+startDate);
                 break;
             case "12M":
                 startDate = today.minusMonths(12);
-        		System.out.println("12M:-"+startDate);
+                System.out.println("12M:-"+startDate);
                 break;
             case "MTD":
                 startDate = today.withDayOfMonth(1); 
-        		System.out.println("MTD:-"+startDate);
+                System.out.println("MTD:-"+startDate);
                 break;
             case "QTD":
                 int startMonthOfQuarter = ((today.getMonthValue() - 1) / 3) * 3 + 1;
                 startDate = LocalDate.of(today.getYear(), startMonthOfQuarter, 1);
-        		System.out.println("QTD:-"+startDate);
+                System.out.println("QTD:-"+startDate);
                 break;
             case "YTD":
                 startDate = today.withDayOfYear(1); 
-        		System.out.println("YTD:-"+startDate);
+                System.out.println("YTD:-"+startDate);
                 break;
             case "ALL":
-            	return new DateRange(null, null); 
+                return new DateRange(null, null); 
             default:
                 throw new IllegalArgumentException("Unknown filter type: " + filterType);
         }
 
-        return new DateRange(startDate.format(formatter), endDate.format(formatter));    
+        return new DateRange(startDate.format(formatter), endDate.format(formatter));   
     }
     
     

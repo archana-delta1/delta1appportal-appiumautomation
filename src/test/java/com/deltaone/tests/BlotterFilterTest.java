@@ -35,26 +35,23 @@ public class BlotterFilterTest extends BaseTest {
 
         blotterPage.clickWhiteBoard(); 
         blotterPage.applyTextFilters(tickers, expirations);
-
         
         int numFiltersToTest = java.util.concurrent.ThreadLocalRandom.current().nextInt(1, 3); 
         List<String> filtersToRun = new ArrayList<>();
 
         for (int i = 0; i < numFiltersToTest; i++) {
             if (filterDeck.isEmpty()) {
-                Object[][] filterArray = getFilters(); // Calls your existing DataProvider
+                Object[][] filterArray = getFilters(); 
                 for (Object[] row : filterArray) {
-                    filterDeck.add((String) row[0]); // Extracts the string (e.g., "1M")
+                    filterDeck.add((String) row[0]);
                 }
-                java.util.Collections.shuffle(filterDeck); // Shuffle the deck!
+                java.util.Collections.shuffle(filterDeck); 
             }
-            // Draw the top card
             filtersToRun.add(filterDeck.remove(0)); 
         }
 
         System.out.println("   -> Selected Filters for this row: " + filtersToRun);
-
-        
+      
         for (String filterName : filtersToRun) {
             System.out.println("   -> Applying Date Filter: " + filterName);
             
@@ -121,10 +118,8 @@ public class BlotterFilterTest extends BaseTest {
         BlotterPage blotterPage = new BlotterPage(driver);
         BlotterDbQueries dbQueries = new BlotterDbQueries();
 
-        // 1. Get a random start date, but we know the end date will be Today!
         DateUtils.CustomDatePair randomDates = DateUtils.getRandomCustomDateRange();
         
-        // Generate today's date exactly as the Database expects it (yyyy-MM-dd)
         String todayDbFormat = java.time.LocalDate.now().toString();
 
         blotterPage.clickWhiteBoard(); 
